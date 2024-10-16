@@ -5,7 +5,6 @@ import * as CANNON from 'cannon-es';
 import CannonDebugger from 'cannon-es-debugger';
 
 let xSpeed = 1;
-let ySpeed = 1;
 
 const physicsWorld = new CANNON.World({
   gravity: new CANNON.Vec3(0, -20, 0),
@@ -60,21 +59,32 @@ scene.add(floorMesh);
 floorMesh.rotation.x = -Math.PI / 2;
 floorMesh.rotation.x = -1;
 
-//SPHERE
+const positionArray = [
+  -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+];
 
-const radius = 1;
-const sphereBody = new CANNON.Body({
-  mass: 7,
-  shape: new CANNON.Sphere(radius),
-});
-sphereBody.position.set(0, 20, -10);
-physicsWorld.addBody(sphereBody);
+function createSphere() {
+  //create random X position
+  const randomX = positionArray[Math.floor(Math.random() * 18)];
 
-//SPHERE GEOMETRY
-const sphereGeo = new THREE.SphereGeometry(radius);
-const sphereMat = new THREE.MeshNormalMaterial();
-const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
-scene.add(sphereMesh);
+  //PHYSICS SPHERE
+  const randomRadius = Math.floor(Math.random() * 3);
+  const radius = 1;
+  const sphereBody = new CANNON.Body({
+    mass: 7,
+    shape: new CANNON.Sphere(randomRadius),
+  });
+  sphereBody.position.set(randomX, 20, -10);
+  physicsWorld.addBody(sphereBody);
+
+  //GEOMETRY SPHERE
+  const sphereGeo = new THREE.SphereGeometry(randomRadius);
+  const sphereMat = new THREE.MeshNormalMaterial();
+  const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+  scene.add(sphereMesh);
+
+  return { sphereMesh, sphereBody };
+}
 
 //PLAYER
 const playerBody = new CANNON.Body({
@@ -94,18 +104,43 @@ playerMesh.position.y = 0;
 
 const cannonDebugger = new CannonDebugger(scene, physicsWorld, {});
 
+let frames = 0;
+let objects = [];
+
 //ANIMATE
 function animate() {
   physicsWorld.fixedStep();
   cannonDebugger.update();
-  sphereMesh.position.copy(sphereBody.position);
-  sphereMesh.quaternion.copy(sphereBody.quaternion);
+  if (frames % 40 === 0) {
+    const sphereBodyObj = createSphere();
+    objects.push(sphereBodyObj);
+  }
+
+  if (objects.length) {
+    for (let i = 0; i < objects.length; i++) {
+      objects[i].sphereMesh.position.copy(objects[i].sphereBody.position);
+      objects[i].sphereMesh.quaternion.copy(objects[i].sphereBody.quaternion);
+    }
+  }
+
+  if (objects.length > 10) {
+    const object = objects.shift();
+    object.sphereMesh.geometry.dispose();
+    object.sphereMesh.material.dispose();
+    scene.remove(object);
+  }
+
   playerMesh.position.copy(playerBody.position);
   playerMesh.quaternion.copy(playerBody.quaternion);
+
   requestAnimationFrame(animate);
   controls.update();
+  renderer.renderLists.dispose();
   renderer.render(scene, camera);
+  frames += 1;
 }
+
+//have a button trigger the start game
 animate();
 
 //EVENT HANDLER
@@ -120,7 +155,6 @@ function onWindowResize() {
 //PLAYER KEYBOARD CONTROLS
 document.addEventListener('keydown', onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
-  console.log(event.which);
   let keyCode = event.which;
   if (keyCode == 65) {
     playerMesh.position.x -= xSpeed;
