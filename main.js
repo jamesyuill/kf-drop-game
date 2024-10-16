@@ -5,6 +5,10 @@ import * as CANNON from 'cannon-es';
 import CannonDebugger from 'cannon-es-debugger';
 
 let xSpeed = 1;
+let frames = 0;
+let objects = [];
+let isGameRunning = false;
+const startBtn = document.getElementById('startbtn');
 
 const physicsWorld = new CANNON.World({
   gravity: new CANNON.Vec3(0, -20, 0),
@@ -104,38 +108,42 @@ playerMesh.position.y = 0;
 
 const cannonDebugger = new CannonDebugger(scene, physicsWorld, {});
 
-let frames = 0;
-let objects = [];
-
 //ANIMATE
 function animate() {
   physicsWorld.fixedStep();
-  cannonDebugger.update();
-  if (frames % 40 === 0) {
-    const sphereBodyObj = createSphere();
-    objects.push(sphereBodyObj);
-  }
+  // cannonDebugger.update();
 
-  if (objects.length) {
-    for (let i = 0; i < objects.length; i++) {
-      objects[i].sphereMesh.position.copy(objects[i].sphereBody.position);
-      objects[i].sphereMesh.quaternion.copy(objects[i].sphereBody.quaternion);
+  if (isGameRunning) {
+    if (frames % 40 === 0) {
+      const sphereBodyObj = createSphere();
+      objects.push(sphereBodyObj);
+    }
+
+    if (objects.length) {
+      for (let i = 0; i < objects.length; i++) {
+        objects[i].sphereMesh.position.copy(objects[i].sphereBody.position);
+        objects[i].sphereMesh.quaternion.copy(objects[i].sphereBody.quaternion);
+      }
+    }
+
+    if (objects.length > 10) {
+      const object = objects.shift();
+      const sceneObj = scene.getObjectByProperty(
+        'uuid',
+        object.sphereMesh.uuid
+      );
+
+      sceneObj.geometry.dispose();
+
+      sceneObj.material.dispose();
+      scene.remove(sceneObj);
     }
   }
-
-  if (objects.length > 10) {
-    const object = objects.shift();
-    object.sphereMesh.geometry.dispose();
-    object.sphereMesh.material.dispose();
-    scene.remove(object);
-  }
-
   playerMesh.position.copy(playerBody.position);
   playerMesh.quaternion.copy(playerBody.quaternion);
 
   requestAnimationFrame(animate);
   controls.update();
-  renderer.renderLists.dispose();
   renderer.render(scene, camera);
   frames += 1;
 }
@@ -143,7 +151,7 @@ function animate() {
 //have a button trigger the start game
 animate();
 
-//EVENT HANDLER
+//RESIZE WINDOW EVENT HANDLER
 window.addEventListener('resize', onWindowResize, false);
 
 function onWindowResize() {
@@ -152,14 +160,23 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+//START BUTTON EVENT HANDLER
+startBtn.addEventListener('click', () => {
+  if (!isGameRunning) {
+    isGameRunning = true;
+  } else {
+    isGameRunning = false;
+  }
+});
+
 //PLAYER KEYBOARD CONTROLS
 document.addEventListener('keydown', onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
   let keyCode = event.which;
-  if (keyCode == 65) {
+  if (keyCode == 37) {
     playerMesh.position.x -= xSpeed;
     playerBody.position.x -= xSpeed;
-  } else if (keyCode == 68) {
+  } else if (keyCode == 39) {
     playerMesh.position.x += xSpeed;
     playerBody.position.x += xSpeed;
   }

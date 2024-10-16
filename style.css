@@ -1,6 +1,28 @@
 * {
-    margin:0;
-    height: 100vh;
+  margin: 0;
+  height: 100vh;
 
-    overflow: hidden;
+  overflow: hidden;
+}
+
+#canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+#startbtn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  height: 4rem;
+  font-size: 2rem;
+  background-color: hotpink;
+}
+
+#startbtn:hover {
+  background-color: rgb(249, 166, 207);
+  cursor: pointer;
 }
