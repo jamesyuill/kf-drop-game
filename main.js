@@ -13,6 +13,7 @@ let isGameRunning = false;
 let gameOver = false;
 let timeStart, timeStop;
 const startBtn = document.getElementById('startbtn');
+const headerDiv = document.getElementById('header');
 
 const physicsWorld = new CANNON.World({
   gravity: new CANNON.Vec3(0, -10, 0),
@@ -133,6 +134,7 @@ function displayScore(gameover) {
   if (gameover) {
     frames = 0;
     objects = [];
+    rateOfDroppage = 40;
     let time = timeStop - timeStart;
     let secondsElapsed = Math.round(time / 1000);
     console.log(secondsElapsed);
@@ -153,6 +155,7 @@ function animate() {
     checkHasFallen();
     if (frames > 1500) {
       rateOfDroppage = 10;
+      renderer.setClearColor(0x7761b7, 1);
     }
     if (frames % rateOfDroppage === 0) {
       const sphereBodyObj = createSphere();
@@ -188,7 +191,6 @@ function animate() {
   frames += 1;
 }
 
-//have a button trigger the start game
 animate();
 
 //RESIZE WINDOW EVENT HANDLER
@@ -206,6 +208,7 @@ startBtn.addEventListener('click', () => {
     isGameRunning = true;
     timeStart = performance.now();
     startBtn.remove();
+    headerDiv.remove();
   }
 });
 
