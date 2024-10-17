@@ -3,15 +3,17 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { color } from 'three/examples/jsm/nodes/Nodes.js';
 import * as CANNON from 'cannon-es';
 import CannonDebugger from 'cannon-es-debugger';
+// import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
 let xSpeed = 1;
 let frames = 0;
+let rateOfDroppage = 40;
 let objects = [];
 let isGameRunning = false;
 const startBtn = document.getElementById('startbtn');
 
 const physicsWorld = new CANNON.World({
-  gravity: new CANNON.Vec3(0, -20, 0),
+  gravity: new CANNON.Vec3(0, -10, 0),
 });
 
 //-9.82
@@ -24,7 +26,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 2, 35);
+camera.position.set(0, 2, 40);
 
 //RENDERER
 const renderer = new THREE.WebGLRenderer({
@@ -32,19 +34,27 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x333333, 1);
+renderer.setClearColor(0x000000, 1);
 
 document.body.appendChild(renderer.domElement);
+
+//ENVIRONMENT MAP
+// const hdriLoader = new RGBELoader();
+// hdriLoader.load('./assets/quarry_01_puresky_8k.hdr', function (texture) {
+//   texture.mapping = THREE.EquirectangularReflectionMapping;
+//   scene.background = texture;
+//   scene.environment = texture;
+// });
 
 //LIGHTS
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
 
 //CAMERA CONTROLS
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.zoomSpeed = 7;
-controls.dynamicDampingFactor = 0.1;
-controls.update();
+// const controls = new OrbitControls(camera, renderer.domElement);
+// controls.zoomSpeed = 7;
+// controls.dynamicDampingFactor = 0.1;
+// controls.update();
 
 //FLOOR
 const groundBody = new CANNON.Body({
@@ -75,7 +85,7 @@ function createSphere() {
   const randomRadius = Math.floor(Math.random() * 3);
   const radius = 1;
   const sphereBody = new CANNON.Body({
-    mass: 7,
+    mass: 5,
     shape: new CANNON.Sphere(randomRadius),
   });
   sphereBody.position.set(randomX, 20, -10);
@@ -101,7 +111,7 @@ playerBody.quaternion.setFromEuler(3.7, 0, 0);
 physicsWorld.addBody(playerBody);
 
 const playerGeo = new THREE.BoxGeometry(2, 2, 2);
-const playerMat = new THREE.MeshNormalMaterial();
+const playerMat = new THREE.MeshMatcapMaterial({ color: 'red' });
 const playerMesh = new THREE.Mesh(playerGeo, playerMat);
 scene.add(playerMesh);
 playerMesh.position.y = 0;
@@ -114,7 +124,11 @@ function animate() {
   // cannonDebugger.update();
 
   if (isGameRunning) {
-    if (frames % 40 === 0) {
+    if (frames > 1500) {
+      console.log('met');
+      rateOfDroppage = 10;
+    }
+    if (frames % rateOfDroppage === 0) {
       const sphereBodyObj = createSphere();
       objects.push(sphereBodyObj);
     }
@@ -126,7 +140,7 @@ function animate() {
       }
     }
 
-    if (objects.length > 10) {
+    if (objects.length > 30) {
       const object = objects.shift();
       const sceneObj = scene.getObjectByProperty(
         'uuid',
@@ -143,7 +157,7 @@ function animate() {
   playerMesh.quaternion.copy(playerBody.quaternion);
 
   requestAnimationFrame(animate);
-  controls.update();
+  // controls.update();
   renderer.render(scene, camera);
   frames += 1;
 }
@@ -164,9 +178,8 @@ function onWindowResize() {
 startBtn.addEventListener('click', () => {
   if (!isGameRunning) {
     isGameRunning = true;
-  } else {
-    isGameRunning = false;
   }
+  startBtn.remove();
 });
 
 //PLAYER KEYBOARD CONTROLS
