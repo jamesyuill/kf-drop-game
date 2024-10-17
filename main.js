@@ -10,6 +10,8 @@ let frames = 0;
 let rateOfDroppage = 40;
 let objects = [];
 let isGameRunning = false;
+let gameOver = false;
+let timeStart, timeStop;
 const startBtn = document.getElementById('startbtn');
 
 const physicsWorld = new CANNON.World({
@@ -113,16 +115,25 @@ physicsWorld.addBody(playerBody);
 const playerGeo = new THREE.BoxGeometry(2, 2, 2);
 const playerMat = new THREE.MeshMatcapMaterial({ color: 'red' });
 const playerMesh = new THREE.Mesh(playerGeo, playerMat);
+
 scene.add(playerMesh);
 playerMesh.position.y = 0;
 
 const cannonDebugger = new CannonDebugger(scene, physicsWorld, {});
 
+function checkHasFallen() {
+  const pos = playerMesh.position.y;
+  if (pos < -6) {
+    gameOver = true;
+    isGameRunning = false;
+    timeStop = performance.now();
+  }
+}
 //ANIMATE
 function animate() {
   physicsWorld.fixedStep();
+  checkHasFallen();
   // cannonDebugger.update();
-
   if (isGameRunning) {
     if (frames > 1500) {
       console.log('met');
@@ -178,8 +189,9 @@ function onWindowResize() {
 startBtn.addEventListener('click', () => {
   if (!isGameRunning) {
     isGameRunning = true;
+    timeStart = performance.now();
+    startBtn.remove();
   }
-  startBtn.remove();
 });
 
 //PLAYER KEYBOARD CONTROLS
