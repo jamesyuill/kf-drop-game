@@ -35,18 +35,11 @@ const renderer = new THREE.WebGLRenderer({
   canvas,
   antialias: true,
 });
+
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000000, 1);
 
 document.body.appendChild(renderer.domElement);
-
-//ENVIRONMENT MAP
-// const hdriLoader = new RGBELoader();
-// hdriLoader.load('./assets/quarry_01_puresky_8k.hdr', function (texture) {
-//   texture.mapping = THREE.EquirectangularReflectionMapping;
-//   scene.background = texture;
-//   scene.environment = texture;
-// });
 
 //LIGHTS
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
@@ -61,19 +54,21 @@ scene.add(ambientLight);
 //FLOOR
 const groundBody = new CANNON.Body({
   type: CANNON.Body.STATIC,
-  shape: new CANNON.Box(new CANNON.Vec3(10, 15, 0.1)),
+  shape: new CANNON.Box(new CANNON.Vec3(10, 16, 0.1)),
 });
 
 groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 groundBody.quaternion.setFromEuler(-1, 0, 0);
 physicsWorld.addBody(groundBody);
 
-const floorGeo = new THREE.BoxGeometry(20, 30, 0.2);
+const floorGeo = new THREE.BoxGeometry(24.5, 40, 0.2);
 const floorMat = new THREE.MeshBasicMaterial({ color: 'grey' });
 const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+
 scene.add(floorMesh);
 floorMesh.rotation.x = -Math.PI / 2;
 floorMesh.rotation.x = -1;
+floorMesh.position.z = -10;
 
 const positionArray = [
   -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -84,18 +79,19 @@ function createSphere() {
   const randomX = positionArray[Math.floor(Math.random() * 18)];
 
   //PHYSICS SPHERE
-  const randomRadius = Math.floor(Math.random() * 3);
-  const radius = 1;
+  const randomRadius = Math.ceil(Math.random() * 2);
+
   const sphereBody = new CANNON.Body({
     mass: 5,
     shape: new CANNON.Sphere(randomRadius),
   });
-  sphereBody.position.set(randomX, 20, -10);
+  sphereBody.position.set(randomX, 20, -11);
   physicsWorld.addBody(sphereBody);
+  // sphereBody.angularVelocity.set(5, 0, 0);
 
   //GEOMETRY SPHERE
   const sphereGeo = new THREE.SphereGeometry(randomRadius);
-  const sphereMat = new THREE.MeshNormalMaterial();
+  const sphereMat = new THREE.MeshMatcapMaterial({ color: 'white' });
   const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
   scene.add(sphereMesh);
 
@@ -121,22 +117,41 @@ playerMesh.position.y = 0;
 
 const cannonDebugger = new CannonDebugger(scene, physicsWorld, {});
 
+//Check if player has fallen off the board
 function checkHasFallen() {
   const pos = playerMesh.position.y;
-  if (pos < -6) {
+  if (pos < -8) {
     gameOver = true;
     isGameRunning = false;
     timeStop = performance.now();
+    displayScore(gameOver);
+  }
+}
+
+//display score
+function displayScore(gameover) {
+  if (gameover) {
+    frames = 0;
+    objects = [];
+    let time = timeStop - timeStart;
+    let secondsElapsed = Math.round(time / 1000);
+    console.log(secondsElapsed);
+
+    const container = document.getElementById('container');
+    const scoreBoard = document.createElement('div');
+    scoreBoard.setAttribute('id', 'scoreboard');
+    scoreBoard.innerText = `Game Over Bro!
+                  You lasted ${secondsElapsed} seconds`;
+    container.appendChild(scoreBoard);
   }
 }
 //ANIMATE
 function animate() {
   physicsWorld.fixedStep();
-  checkHasFallen();
   // cannonDebugger.update();
   if (isGameRunning) {
+    checkHasFallen();
     if (frames > 1500) {
-      console.log('met');
       rateOfDroppage = 10;
     }
     if (frames % rateOfDroppage === 0) {
