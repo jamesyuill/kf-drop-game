@@ -43,15 +43,15 @@ renderer.setClearColor(0x000000, 1);
 document.body.appendChild(renderer.domElement);
 
 //AUDIO LISTENER
-const listener = new THREE.AudioListener();
-camera.add(listener);
-const sound = new THREE.Audio(listener);
-const audioLoader = new THREE.AudioLoader();
-audioLoader.load('Funked Up JY DEMO.mp3', function (buffer) {
-  sound.setBuffer(buffer);
-  sound.setLoop(true);
-  sound.setVolume(0.8);
-});
+// const listener = new THREE.AudioListener();
+// camera.add(listener);
+// const sound = new THREE.Audio(listener);
+// const audioLoader = new THREE.AudioLoader();
+// audioLoader.load('Funked Up JY DEMO.mp3', function (buffer) {
+//   sound.setBuffer(buffer);
+//   sound.setLoop(true);
+//   sound.setVolume(0.8);
+// });
 
 //LIGHTS
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
@@ -136,7 +136,7 @@ function checkHasFallen() {
     gameOver = true;
     isGameRunning = false;
     timeStop = performance.now();
-    sound.stop();
+    // sound.stop();
     displayScore(gameOver);
   }
 }
@@ -219,7 +219,7 @@ startBtn.addEventListener('click', () => {
   if (!isGameRunning) {
     isGameRunning = true;
     timeStart = performance.now();
-    sound.play();
+    // sound.play();
     startBtn.remove();
     headerDiv.remove();
   }
