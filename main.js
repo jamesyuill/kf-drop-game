@@ -165,7 +165,7 @@ function animate() {
   // cannonDebugger.update();
   if (isGameRunning) {
     checkHasFallen();
-    if (frames > 1500) {
+    if (frames > 1200) {
       rateOfDroppage = 10;
       renderer.setClearColor(0x880021, 1);
     }
