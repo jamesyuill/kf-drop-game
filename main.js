@@ -1,9 +1,6 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { color } from 'three/examples/jsm/nodes/Nodes.js';
 import * as CANNON from 'cannon-es';
 import CannonDebugger from 'cannon-es-debugger';
-// import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
 let xSpeed = 1;
 let frames = 0;
@@ -18,8 +15,6 @@ const headerDiv = document.getElementById('header');
 const physicsWorld = new CANNON.World({
   gravity: new CANNON.Vec3(0, -10, 0),
 });
-
-//-9.82
 
 //SCENE & CAMERA
 const scene = new THREE.Scene();
@@ -57,12 +52,6 @@ document.body.appendChild(renderer.domElement);
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
 
-//CAMERA CONTROLS
-// const controls = new OrbitControls(camera, renderer.domElement);
-// controls.zoomSpeed = 7;
-// controls.dynamicDampingFactor = 0.1;
-// controls.update();
-
 //FLOOR
 const groundBody = new CANNON.Body({
   type: CANNON.Body.STATIC,
@@ -99,7 +88,6 @@ function createSphere() {
   });
   sphereBody.position.set(randomX, 20, -11);
   physicsWorld.addBody(sphereBody);
-  // sphereBody.angularVelocity.set(5, 0, 0);
 
   //GEOMETRY SPHERE
   const sphereGeo = new THREE.SphereGeometry(randomRadius);
@@ -198,7 +186,6 @@ function animate() {
   playerMesh.quaternion.copy(playerBody.quaternion);
 
   requestAnimationFrame(animate);
-  // controls.update();
   renderer.render(scene, camera);
   frames += 1;
 }
@@ -236,9 +223,4 @@ function onDocumentKeyDown(event) {
     playerMesh.position.x += xSpeed;
     playerBody.position.x += xSpeed;
   }
-  //space bar
-  // else if (keyCode == 32) {
-  //   playerMesh.position.set(0, 0, 0);
-  //   playerBody.position.set(0, 0, 0);
-  // }
 }
