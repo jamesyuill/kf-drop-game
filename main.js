@@ -4,7 +4,7 @@ import CannonDebugger from 'cannon-es-debugger';
 
 let xSpeed = 1;
 let frames = 0;
-let rateOfDroppage = 40;
+let rateOfDroppage = 28;
 let objects = [];
 let isGameRunning = false;
 let gameOver = false;
@@ -24,7 +24,8 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 2, 40);
+camera.position.set(0, 20, 35);
+camera.rotation.set(-0.5, 0, 0);
 
 //RENDERER
 const renderer = new THREE.WebGLRenderer({
@@ -37,17 +38,6 @@ renderer.setClearColor(0x000000, 1);
 
 document.body.appendChild(renderer.domElement);
 
-//AUDIO LISTENER
-// const listener = new THREE.AudioListener();
-// camera.add(listener);
-// const sound = new THREE.Audio(listener);
-// const audioLoader = new THREE.AudioLoader();
-// audioLoader.load('Funked Up JY DEMO.mp3', function (buffer) {
-//   sound.setBuffer(buffer);
-//   sound.setLoop(true);
-//   sound.setVolume(0.8);
-// });
-
 //LIGHTS
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
@@ -55,11 +45,10 @@ scene.add(ambientLight);
 //FLOOR
 const groundBody = new CANNON.Body({
   type: CANNON.Body.STATIC,
-  shape: new CANNON.Box(new CANNON.Vec3(10, 16, 0.1)),
+  shape: new CANNON.Box(new CANNON.Vec3(12.3, 20, 0.1)),
 });
 
 groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-groundBody.quaternion.setFromEuler(-1, 0, 0);
 physicsWorld.addBody(groundBody);
 
 const floorGeo = new THREE.BoxGeometry(24.5, 40, 0.2);
@@ -68,8 +57,6 @@ const floorMesh = new THREE.Mesh(floorGeo, floorMat);
 
 scene.add(floorMesh);
 floorMesh.rotation.x = -Math.PI / 2;
-floorMesh.rotation.x = -1;
-floorMesh.position.z = -10;
 
 const positionArray = [
   -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -77,20 +64,22 @@ const positionArray = [
 
 function createSphere() {
   //create random X position
-  const randomX = positionArray[Math.floor(Math.random() * 18)];
+  const randomX =
+    positionArray[Math.floor(Math.random() * positionArray.length)];
 
   //PHYSICS SPHERE
   const randomRadius = Math.ceil(Math.random() * 2);
 
   const sphereBody = new CANNON.Body({
-    mass: 5,
-    shape: new CANNON.Sphere(randomRadius),
+    mass: 100,
+    shape: new CANNON.Sphere(2),
   });
-  sphereBody.position.set(randomX, 20, -11);
+  sphereBody.position.set(randomX, 3, -13);
+  sphereBody.angularVelocity.set(20, 0, 0);
   physicsWorld.addBody(sphereBody);
 
   //GEOMETRY SPHERE
-  const sphereGeo = new THREE.SphereGeometry(randomRadius);
+  const sphereGeo = new THREE.SphereGeometry(2);
   const sphereMat = new THREE.MeshMatcapMaterial({ color: 'white' });
   const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
   scene.add(sphereMesh);
@@ -100,12 +89,12 @@ function createSphere() {
 
 //PLAYER
 const playerBody = new CANNON.Body({
-  mass: 5,
+  mass: 2,
   shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)),
 });
 
-playerBody.position.set(0, -2, 6);
-playerBody.quaternion.setFromEuler(3.7, 0, 0);
+playerBody.position.set(0, 1, 10);
+playerBody.quaternion.setFromEuler(0, 0, 0);
 physicsWorld.addBody(playerBody);
 
 const playerGeo = new THREE.BoxGeometry(2, 2, 2);
@@ -187,7 +176,10 @@ function animate() {
 
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
-  frames += 1;
+
+  if (isGameRunning) {
+    frames += 1;
+  }
 }
 
 animate();
@@ -216,11 +208,27 @@ startBtn.addEventListener('click', () => {
 document.addEventListener('keydown', onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
   let keyCode = event.which;
-  if (keyCode == 37) {
-    playerMesh.position.x -= xSpeed;
-    playerBody.position.x -= xSpeed;
-  } else if (keyCode == 39) {
-    playerMesh.position.x += xSpeed;
-    playerBody.position.x += xSpeed;
+
+  switch (keyCode) {
+    case 37:
+      playerMesh.position.x -= xSpeed;
+      playerBody.position.x -= xSpeed;
+      break;
+    case 39:
+      playerMesh.position.x += xSpeed;
+      playerBody.position.x += xSpeed;
+      break;
+    case 38:
+      playerMesh.position.z -= xSpeed;
+      playerBody.position.z -= xSpeed;
+      break;
+    case 40:
+      playerMesh.position.z += xSpeed;
+      playerBody.position.z += xSpeed;
+      break;
+    case 32:
+      playerMesh.position.y += xSpeed * 4;
+      playerBody.position.y += xSpeed * 4;
+      break;
   }
 }
